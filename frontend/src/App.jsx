@@ -10,15 +10,17 @@ function App() {
   return (
     <BrowserRouter>
       <header className="app-header">
-        <nav>
-          <Link to="/">Home</Link>
-          {!token && <Link to="/register">Register</Link>}
-          {!token && <Link to="/">Login</Link>}
-          {token && <Link to="/dashboard">Dashboard</Link>}
-        </nav>
+        <div className="header-inner">
+          <div className="brand">TaskFlow</div>
+          <nav>
+            {!token && <Link to="/">Login</Link>}
+            {!token && <Link to="/register">Register</Link>}
+            {token && <Link to="/dashboard">Dashboard</Link>}
+          </nav>
+        </div>
       </header>
 
-      <main>
+      <main className="page-container">
         <Routes>
           <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Login />} />
           <Route path="/register" element={<Register />} />

@@ -1,4 +1,4 @@
-
+import "../styles/Dashboard.css";
 import { useEffect, useState } from 'react';
 import api from '../api';
 
@@ -52,29 +52,48 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      <h2>Tasks</h2>
-      <button onClick={logout}>Logout</button>
+      <div className="dashboard-header">
+        <div>
+          <h2>TaskFlow Dashboard</h2>
+          <p className="dashboard-subtitle">Manage your tasks with ease and keep your work organized.</p>
+        </div>
+        <button className="logout-button" onClick={logout}>Logout</button>
+      </div>
+
       {error && <div className="error">{error}</div>}
 
       <form onSubmit={createTask} className="task-form">
-        <input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        <button type="submit">Create</button>
+        <input
+          placeholder="Task title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+        <input
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <button type="submit" disabled={!title}>Create</button>
       </form>
 
-      <ul className="task-list">
-        {tasks.map((t) => (
-          <li key={t._id}>
-            <strong>{t.title}</strong>
-            <p>{t.description}</p>
-            <small>{new Date(t.createdAt).toLocaleString()}</small>
-            <div>
-              <button onClick={() => editTask(t)}>Edit</button>
-              <button onClick={() => removeTask(t._id)}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {tasks.length === 0 ? (
+        <div className="no-tasks">No tasks created yet. Add a new task to get started.</div>
+      ) : (
+        <ul className="task-list">
+          {tasks.map((t) => (
+            <li key={t._id} className="task-card">
+              <strong>{t.title}</strong>
+              <p>{t.description || 'No description added.'}</p>
+              <small>Created: {new Date(t.createdAt).toLocaleString()}</small>
+              <div className="task-actions">
+                <button className="edit" type="button" onClick={() => editTask(t)}>Edit</button>
+                <button className="delete" type="button" onClick={() => removeTask(t._id)}>Delete</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
