@@ -1,0 +1,23 @@
+# Logs
+logs
+*.log
+backend/logs
+
+# Dependencies
+backend/node_modules/
+
+# Production Build
+backend/dist/
+backend/dist-ssr/
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# 
+node_modules
+.env
+dist
