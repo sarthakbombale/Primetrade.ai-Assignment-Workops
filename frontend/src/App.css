@@ -1,64 +1,65 @@
 .app-header {
-  width: 100%;
-  background: #0d6efd;
-  color: white;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
-  z-index: 20;
-  box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
+  z-index: 100;
 }
 
 .header-inner {
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 18px 24px;
-  gap: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .brand {
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  font-size: 1.2rem;
+  color: #2563eb;
 }
 
 .app-header nav {
   display: flex;
-  flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
 }
 
-.app-header a {
-  color: white;
+.app-header nav a {
+  color: #374151;
   text-decoration: none;
-  font-weight: 600;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  transition: background 0.25s ease, transform 0.25s ease;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-.app-header a:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+.app-header nav a:hover {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .page-container {
-  min-height: calc(100vh - 74px);
-  padding: 40px 18px 60px;
-  max-width: 1180px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 @media (max-width: 768px) {
   .header-inner {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .app-header nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .page-container {
-    padding: 24px 16px 40px;
+    padding: 16px;
   }
 }
