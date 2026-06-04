@@ -9,6 +9,7 @@ import TaskForm from "../components/TaskForm";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import FilterDropdown from "../components/FilterDropdown";
+import TaskSkeleton from "../components/TaskSkeleton";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -25,14 +26,17 @@ function Dashboard() {
   const [overallTotal, setOverallTotal] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadTasks = async (pageNum = page) => {
     setLoading(true);
+    setError(null);
+
     try {
       const res = await api.get("/tasks", {
         params: {
           search: debouncedSearch || undefined,
-          status: statusFilter === 'all' ? undefined : statusFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
           page: pageNum,
           limit,
         },
@@ -41,13 +45,14 @@ function Dashboard() {
       const payload = res.data.data || {};
       setTasks(payload.tasks || []);
       const meta = payload.meta || {};
+
       setTotalPages(meta.totalPages || 1);
       setOverallTotal(meta.overallTotal || 0);
       setCompletedCount(meta.completedCount || 0);
       setPage(meta.page || pageNum);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load tasks");
+      setError("Failed to load tasks");
     } finally {
       setLoading(false);
     }
@@ -221,9 +226,20 @@ function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="loading-state">Loading tasks...</div>
+        <ul className="task-list">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <TaskSkeleton key={i} />
+          ))}
+        </ul>
+      ) : error ? (
+        <div className="fallback-error">
+          <h3>Something went wrong</h3>
+          <button onClick={() => loadTasks(page)}>Retry</button>
+        </div>
       ) : tasks.length === 0 ? (
-        <div className="no-tasks">No tasks available.</div>
+        <div className="fallback-empty">
+          <h3>No tasks found</h3>
+        </div>
       ) : (
         <ul className="task-list">
           {tasks.map((task) => (
