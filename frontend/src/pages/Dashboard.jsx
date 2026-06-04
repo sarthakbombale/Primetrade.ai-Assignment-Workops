@@ -3,7 +3,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import api from "../api";
+import api from "../services/api";
+import TaskCard from "../components/TaskCard";
+import TaskForm from "../components/TaskForm";
+import SearchBar from "../components/SearchBar";
+import Pagination from "../components/Pagination";
+import FilterDropdown from "../components/FilterDropdown";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -11,24 +16,67 @@ function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const limit = 6;
+  const [totalPages, setTotalPages] = useState(1);
+  const [overallTotal, setOverallTotal] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const loadTasks = async () => {
+  const loadTasks = async (pageNum = page) => {
+    setLoading(true);
     try {
-      const res = await api.get("/tasks");
-      setTasks(res.data.data || []);
+      const res = await api.get("/tasks", {
+        params: {
+          search: debouncedSearch || undefined,
+          status: statusFilter === 'all' ? undefined : statusFilter,
+          page: pageNum,
+          limit,
+        },
+      });
+
+      const payload = res.data.data || {};
+      setTasks(payload.tasks || []);
+      const meta = payload.meta || {};
+      setTotalPages(meta.totalPages || 1);
+      setOverallTotal(meta.overallTotal || 0);
+      setCompletedCount(meta.completedCount || 0);
+      setPage(meta.page || pageNum);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load tasks");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadTasks();
+    loadTasks(1);
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    loadTasks(page);
+  }, [debouncedSearch, statusFilter, page]);
+
+
+  function openTask(taskId) {
+    navigate(`/edit-task/${taskId}`);
+  }
 
   const createTask = async (e) => {
     e.preventDefault();
-
     try {
       await api.post("/tasks", {
         title,
@@ -39,12 +87,9 @@ function Dashboard() {
       setDescription("");
 
       toast.success("Task created successfully");
-
-      loadTasks();
+      loadTasks(1);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to create task"
-      );
+      toast.error(error.response?.data?.message || "Failed to create task");
     }
   };
 
@@ -66,11 +111,31 @@ function Dashboard() {
     try {
       await api.delete(`/tasks/${id}`);
 
-      setTasks(tasks.filter((task) => task._id !== id));
+      setTasks((prev) => prev.filter((task) => task._id !== id));
 
       toast.success("Task deleted successfully");
     } catch (error) {
+      console.error(error);
       toast.error("Failed to delete task");
+    }
+  };
+
+  const toggleComplete = async (task) => {
+    const nextStatus = task.status === 'completed' ? 'pending' : 'completed';
+    const optimistic = { ...task, status: nextStatus };
+    setTasks((prev) => prev.map((t) => (t._id === task._id ? optimistic : t)));
+    try {
+      const res = await api.put(`/tasks/${task._id}/toggle`);
+      const updated = res.data.data;
+      setTasks((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+      loadTasks(page);
+      toast.success("Task status updated");
+    } catch (err) {
+      console.error(err);
+      setTasks((prev) =>
+        prev.map((t) => (t._id === task._id ? { ...t, status: task.status } : t))
+      );
+      toast.error("Failed to update task status");
     }
   };
 
@@ -98,11 +163,12 @@ function Dashboard() {
     }, 500);
   };
 
+
   return (
     <div className="dashboard">
       <div className="dashboard-hero">
         <div>
-          <h1>TaskFlow</h1>
+          <h1>TaskFlow Dashboard</h1>
           <p>Personal Task Management Workspace</p>
         </div>
 
@@ -113,79 +179,72 @@ function Dashboard() {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <h3>{tasks.length}</h3>
+          <h3>{overallTotal}</h3>
           <span>Total Tasks</span>
         </div>
 
         <div className="stat-card">
-          <h3>{tasks.length}</h3>
-          <span>Active Tasks</span>
+          <h3>{overallTotal - completedCount}</h3>
+          <span>Pending Tasks</span>
+        </div>
+
+        <div className="stat-card">
+          <h3>{completedCount}</h3>
+          <span>Completed Tasks</span>
         </div>
       </div>
 
-      <form onSubmit={createTask} className="task-form">
-        <h3>Create New Task</h3>
-
-        <input
-          type="text"
-          placeholder="Enter task title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
+      <div className="task-form">
+        <TaskForm
+          title={title}
+          description={description}
+          onTitle={setTitle}
+          onDescription={setDescription}
+          onSubmit={createTask}
         />
+      </div>
 
-        <input
-          type="text"
-          placeholder="Enter task description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <button type="submit">Create Task</button>
-      </form>
-
-      {tasks.length === 0 ? (
-        <div className="no-tasks">
-          No tasks available. Create your first task.
+      <div className="control-bar">
+        <div className="control-left">
+          <SearchBar
+            value={searchTerm}
+            onChange={(v) => {
+              setSearchTerm(v);
+              setPage(1);
+            }}
+          />
         </div>
+
+        <div className="control-right">
+          <FilterDropdown value={statusFilter} onChange={(v) => { setStatusFilter(v); setPage(1); }} />
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="loading-state">Loading tasks...</div>
+      ) : tasks.length === 0 ? (
+        <div className="no-tasks">No tasks available.</div>
       ) : (
         <ul className="task-list">
           {tasks.map((task) => (
-            <li key={task._id} className="task-card">
-              <strong>{task.title}</strong>
-
-              <p>
-                {task.description || "No description provided."}
-              </p>
-
-              <small>
-                Created:{" "}
-                {new Date(task.createdAt).toLocaleString()}
-              </small>
-
-              <div className="task-actions">
-                <button
-                  type="button"
-                  className="edit"
-                  onClick={() =>
-                    navigate(`/edit-task/${task._id}`)
-                  }
-                >
-                  Edit
-                </button>
-
-                <button
-                  type="button"
-                  className="delete"
-                  onClick={() => removeTask(task._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
+            <TaskCard
+              key={task._id}
+              task={task}
+              onCardClick={() => navigate(`/edit-task/${task._id}`)}
+              onEdit={() => navigate(`/edit-task/${task._id}`)}
+              onDelete={() => removeTask(task._id)}
+              onToggle={() => toggleComplete(task)}
+            />
           ))}
         </ul>
       )}
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage((p) => Math.max(p - 1, 1))}
+        onNext={() => setPage((p) => Math.min(p + 1, totalPages))}
+      />
     </div>
   );
 }

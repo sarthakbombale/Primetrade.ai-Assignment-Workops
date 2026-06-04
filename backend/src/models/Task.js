@@ -7,6 +7,7 @@ const taskSchema = new Schema(
 		title: { type: String, required: true },
 		description: { type: String },
 		user: { type: Types.ObjectId, ref: 'User', required: true },
+		status: { type: String, enum: ['pending', 'completed'], default: 'pending' },
 	},
 	{ timestamps: true }
 );

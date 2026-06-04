@@ -25,7 +25,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/tasks', taskRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
-app.use((req, res) => res.status(404).json({ success: false, error: 'Not Found' }));
+app.use((req, res) => res.status(404).json({ success: false, message: 'Not Found' }));
 
 app.use(errorHandler);
 

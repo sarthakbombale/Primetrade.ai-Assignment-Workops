@@ -2,7 +2,7 @@ import "../styles/EditTask.css";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import api from "../api";
+import api from "../services/api";
 
 function EditTask() {
   const { id } = useParams();
@@ -10,6 +10,7 @@ function EditTask() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [status, setStatus] = useState('pending');
 
   useEffect(() => {
     fetchTask();
@@ -21,6 +22,7 @@ function EditTask() {
 
       setTitle(res.data.data.title);
       setDescription(res.data.data.description || "");
+      setStatus(res.data.data.status || 'pending');
     } catch {
       toast.error("Failed to load task");
     }
@@ -33,6 +35,7 @@ function EditTask() {
       await api.put(`/tasks/${id}`, {
         title,
         description,
+        status,
       });
 
       toast.success("Task updated successfully");
@@ -62,6 +65,16 @@ function EditTask() {
           onChange={(e) => setDescription(e.target.value)}
           rows="5"
         />
+
+        <div style={{ marginTop: 8 }}>
+          <label>
+            Status:{' '}
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </label>
+        </div>
 
         <button type="submit">
           Update Task
