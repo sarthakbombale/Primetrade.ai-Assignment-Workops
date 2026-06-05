@@ -1,4 +1,5 @@
 import StatusBadge from './StatusBadge';
+import '../styles/TaskCard.css';
 
 export default function TaskCard({ task, onCardClick, onEdit, onDelete, onToggle }) {
   return (

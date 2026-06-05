@@ -1,0 +1,44 @@
+.task-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 180px; /* ensures consistent card size */
+}
+
+.task-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+/* LEFT CONTENT */
+.task-card-left {
+  flex: 1;
+  min-width: 0;
+}
+
+/* RIGHT SIDE FIX */
+.task-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ACTION BUTTONS MUST NEVER DISAPPEAR */
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.task-title,
+.task-desc {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

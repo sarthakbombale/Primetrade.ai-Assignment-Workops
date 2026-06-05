@@ -1,52 +1,60 @@
-/* filter dropdown styles */
 .custom-dropdown {
   position: relative;
   width: 180px;
   font-family: inherit;
 }
 
+/* BUTTON */
 .dropdown-btn {
   width: 100%;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid #dbeafe;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
 }
 
 .dropdown-btn:hover {
-  border-color: #2563eb;
+  border-color: var(--primary);
 }
 
+/* MENU */
 .dropdown-menu {
   position: absolute;
   top: 110%;
   left: 0;
   width: 100%;
-  background: white;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   overflow: hidden;
   z-index: 50;
 }
 
+/* ITEMS */
 .dropdown-item {
   padding: 10px 12px;
   cursor: pointer;
   font-weight: 500;
-  transition: 0.2s;
+  color: var(--text);
+  transition: 0.2s ease;
 }
 
 .dropdown-item:hover {
-  background: #f1f5f9;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
 }
 
+/* ACTIVE STATE */
 .dropdown-item.active {
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }

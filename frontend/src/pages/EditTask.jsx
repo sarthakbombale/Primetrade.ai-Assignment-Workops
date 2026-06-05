@@ -10,7 +10,8 @@ function EditTask() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState('pending');
+  const [status, setStatus] = useState("pending");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     fetchTask();
@@ -22,7 +23,7 @@ function EditTask() {
 
       setTitle(res.data.data.title);
       setDescription(res.data.data.description || "");
-      setStatus(res.data.data.status || 'pending');
+      setStatus(res.data.data.status || "pending");
     } catch {
       toast.error("Failed to load task");
     }
@@ -39,7 +40,6 @@ function EditTask() {
       });
 
       toast.success("Task updated successfully");
-
       navigate("/dashboard");
     } catch {
       toast.error("Failed to update task");
@@ -66,19 +66,48 @@ function EditTask() {
           rows="5"
         />
 
-        <div style={{ marginTop: 8 }}>
-          <label>
-            Status:{' '}
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-            </select>
-          </label>
+        {/* CUSTOM DROPDOWN (FIXED) */}
+        <div className="custom-dropdown">
+          <label>Status</label>
+
+          <div
+            className="dropdown-btn"
+            onClick={() => setOpen(!open)}
+          >
+            {status === "pending" ? "Pending" : "Completed"}
+            <span>▾</span>
+          </div>
+
+          {open && (
+            <div className="dropdown-menu">
+              <div
+                className={`dropdown-item ${
+                  status === "pending" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setStatus("pending");
+                  setOpen(false);
+                }}
+              >
+                Pending
+              </div>
+
+              <div
+                className={`dropdown-item ${
+                  status === "completed" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setStatus("completed");
+                  setOpen(false);
+                }}
+              >
+                Completed
+              </div>
+            </div>
+          )}
         </div>
 
-        <button type="submit">
-          Update Task
-        </button>
+        <button type="submit">Update Task</button>
 
         <button
           type="button"
