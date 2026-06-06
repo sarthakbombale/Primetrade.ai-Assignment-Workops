@@ -1,5 +1,5 @@
 import "../styles/Dashboard.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
@@ -10,9 +10,11 @@ import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import FilterDropdown from "../components/FilterDropdown";
 import TaskSkeleton from "../components/TaskSkeleton";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
@@ -28,15 +30,15 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const loadTasks = async (pageNum = page) => {
+  const loadTasks = useCallback(async (pageNum, filterSearch, filterStatus) => {
     setLoading(true);
     setError(null);
 
     try {
       const res = await api.get("/tasks", {
         params: {
-          search: debouncedSearch || undefined,
-          status: statusFilter === "all" ? undefined : statusFilter,
+          search: filterSearch || undefined,
+          status: filterStatus === "all" ? undefined : filterStatus,
           page: pageNum,
           limit,
         },
@@ -56,11 +58,15 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
-    loadTasks(1);
-  }, []);
+    const handle = setTimeout(() => {
+      void loadTasks(page, debouncedSearch, statusFilter);
+    }, 0);
+
+    return () => clearTimeout(handle);
+  }, [loadTasks, page, debouncedSearch, statusFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,15 +76,6 @@ function Dashboard() {
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  useEffect(() => {
-    loadTasks(page);
-  }, [debouncedSearch, statusFilter, page]);
-
-
-  function openTask(taskId) {
-    navigate(`/edit-task/${taskId}`);
-  }
 
   const createTask = async (e) => {
     e.preventDefault();
@@ -144,7 +141,7 @@ function Dashboard() {
     }
   };
 
-  const logout = async () => {
+  const handleLogout = async () => {
     const result = await Swal.fire({
       title: "Logout?",
       text: "You will need to login again.",
@@ -159,13 +156,9 @@ function Dashboard() {
 
     if (!result.isConfirmed) return;
 
-    localStorage.removeItem("token");
-
+    logout();
     toast.success("Logged out successfully");
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 500);
+    navigate("/");
   };
 
 
@@ -177,7 +170,7 @@ function Dashboard() {
           <p>Personal Task Management Workspace</p>
         </div>
 
-        <button className="logout-button" onClick={logout}>
+        <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>
       </div>

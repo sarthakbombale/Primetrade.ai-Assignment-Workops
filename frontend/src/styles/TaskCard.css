@@ -42,3 +42,8 @@
   word-break: break-word;
   overflow-wrap: anywhere;
 }
+input, textarea, select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}

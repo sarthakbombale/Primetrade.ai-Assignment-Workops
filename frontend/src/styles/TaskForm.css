@@ -48,3 +48,8 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+input, textarea, select {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}

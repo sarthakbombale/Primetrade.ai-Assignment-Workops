@@ -4,17 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
 import { Link } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     async function submit(e) {
         e.preventDefault();
         try {
             const res = await api.post('/auth/login', { email, password });
-            localStorage.setItem('token', res.data.token);
+            const token = res.data.token || res.data?.data?.token;
+            if (!token) throw new Error('Token not returned');
+            login(token);
             toast.success('Logged in successfully');
             navigate('/dashboard');
         } catch (err) {

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function StatusBadge({ status }) {
   const style = {
     padding: '4px 8px',
